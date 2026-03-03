@@ -7,8 +7,8 @@ A minimal web app for **reading and replying** to messages only. No feeds, no ex
 - **Next.js** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **Prisma** + **SQLite**
-- Mock connectors only (no external APIs)
+- **Prisma** + **PostgreSQL**
+- Mock connectors; Telegram 可真正收發
 
 ## Setup
 
@@ -20,7 +20,7 @@ A minimal web app for **reading and replying** to messages only. No feeds, no ex
 
 2. **Environment**
 
-   Copy `.env.example` to `.env` (or keep the default `DATABASE_URL="file:./dev.db"`).
+   Copy `.env.example` to `.env` and set `DATABASE_URL` to a Postgres URL（本地可用 [Neon](https://neon.tech) 免費層或 Docker）。
 
 3. **Database**
 
@@ -35,15 +35,17 @@ A minimal web app for **reading and replying** to messages only. No feeds, no ex
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000). Sign in with the demo user to see the seeded inbox.
+   Open [http://localhost:3000](http://localhost:3000). Sign in with the demo user to use the inbox.
 
 ## Deploy to Vercel
 
-本專案預設使用 **SQLite**，在 Vercel 的 serverless 環境下**無法正常寫入**，會出現 "Application error" 或資料庫無法連線。
-
-**做法一（建議）**：在 Vercel 專案中加上 **Vercel Postgres**（或 Neon、PlanetScale 等），取得 Postgres 的 `DATABASE_URL`，在 Vercel 環境變數中設定。接著需將 Prisma 改為使用 `provider = "postgresql"` 並在部署前執行 `prisma db push` 與 seed（例如用 Build Command 或 GitHub Action）。
-
-**做法二**：若暫不設定資料庫，已加上錯誤處理；部署後會顯示登入頁與「資料庫無法連線」說明，不會再白屏。
+1. 在 Vercel 專案中：**Storage** → **Create Database** → 選 **Postgres**（Vercel Postgres），建立後會自動掛上 `DATABASE_URL` 等環境變數。
+2. 重新 **Deploy** 一次（Build 會執行 `prisma db push`，自動建表）。
+3. **第一次部署後**要寫入種子資料：在本機執行一次（把 `你的Postgres連線字串` 換成 Vercel 專案裡 Postgres 的連線字串）：
+   ```bash
+   DATABASE_URL="你的Postgres連線字串" npm run db:seed
+   ```
+4. 之後登入頁即可用 demo 帳號登入。
 
 ## Pages
 
@@ -107,3 +109,4 @@ A minimal web app for **reading and replying** to messages only. No feeds, no ex
 
 - **Not a social platform** — read and reply only; after sending a reply the app redirects to `/inbox`.
 - **No feeds, explore, or infinite scroll** — interface stays minimal and calm.
+

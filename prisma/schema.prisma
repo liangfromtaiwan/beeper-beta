@@ -1,12 +1,12 @@
 // Unified Inbox - distraction-free messaging
-// SQLite for MVP; mock connectors only
+// PostgreSQL for Vercel compatibility; use Neon/Vercel Postgres/etc.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

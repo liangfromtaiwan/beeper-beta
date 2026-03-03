@@ -1,0 +1,94 @@
+// Unified Inbox - distraction-free messaging
+// SQLite for MVP; mock connectors only
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts      Account[]
+  focusSettings FocusSettings?
+}
+
+model Account {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider         String    // facebook, instagram, line, telegram (mock connectors)
+  providerId       String?
+  displayName      String?
+  email            String?
+  avatarUrl        String?
+  connectedAt      DateTime  @default(now())
+  disconnectedAt   DateTime?
+
+  conversations Conversation[]
+}
+
+model Conversation {
+  id                 String   @id @default(cuid())
+  accountId          String
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  externalId         String?
+  title              String
+  avatarUrl          String?
+  pinned             Boolean  @default(false)
+  muted              Boolean  @default(false)
+  unreadCount        Int      @default(0)
+  lastMessagePreview String?
+  lastMessageAt      DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  messages Message[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  externalId     String?
+  body           String
+  fromMe         Boolean  @default(false)
+  sentAt         DateTime @default(now())
+  readAt        DateTime?
+
+  @@index([conversationId, sentAt])
+}
+
+model QuickReplyPreset {
+  id       String @id @default(cuid())
+  label    String
+  body     String
+  sortOrder Int   @default(0)
+}
+
+model FocusSettings {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled       Boolean  @default(false)
+  batchSchedule String?  // JSON or simple string for mock: e.g. "9:00, 14:00, 18:00"
+  updatedAt     DateTime @updatedAt
+}
+
+// 連結 Telegram 用：connect 碼連結使用者，invite 碼讓朋友加入成為對話
+model TelegramLinkCode {
+  id        String   @id @default(cuid())
+  code      String   @unique  // /start 的參數，如 connect_abc 或 inv_xyz
+  userId    String?  // connect 時用
+  accountId String?  // invite 時用，要加入對話的 Telegram Account id
+  type      String   // "connect" | "invite"
+  createdAt DateTime @default(now())
+}

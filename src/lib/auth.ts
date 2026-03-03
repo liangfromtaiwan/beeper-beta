@@ -10,9 +10,13 @@ export async function getCurrentUserId(): Promise<string | null> {
 }
 
 export async function getCurrentUser() {
-  const id = await getCurrentUserId();
-  if (!id) return null;
-  return prisma.user.findUnique({ where: { id } });
+  try {
+    const id = await getCurrentUserId();
+    if (!id) return null;
+    return await prisma.user.findUnique({ where: { id } });
+  } catch {
+    return null;
+  }
 }
 
 export async function setUserCookie(userId: string) {

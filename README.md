@@ -37,6 +37,14 @@ A minimal web app for **reading and replying** to messages only. No feeds, no ex
 
    Open [http://localhost:3000](http://localhost:3000). Sign in with the demo user to see the seeded inbox.
 
+## Deploy to Vercel
+
+本專案預設使用 **SQLite**，在 Vercel 的 serverless 環境下**無法正常寫入**，會出現 "Application error" 或資料庫無法連線。
+
+**做法一（建議）**：在 Vercel 專案中加上 **Vercel Postgres**（或 Neon、PlanetScale 等），取得 Postgres 的 `DATABASE_URL`，在 Vercel 環境變數中設定。接著需將 Prisma 改為使用 `provider = "postgresql"` 並在部署前執行 `prisma db push` 與 seed（例如用 Build Command 或 GitHub Action）。
+
+**做法二**：若暫不設定資料庫，已加上錯誤處理；部署後會顯示登入頁與「資料庫無法連線」說明，不會再白屏。
+
 ## Pages
 
 | Route | Description |
